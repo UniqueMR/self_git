@@ -10,6 +10,9 @@ self_git
 3. 尝试开发add命令
 
 7月25日：
+1. 尝试read-cache和update-cache的实现
+2. 结合命令操作理解git原理，探究object中的文件类型及内容
+3. 研究git源码，探究C中存储文件的stat对象
 
 7月26日：
 
