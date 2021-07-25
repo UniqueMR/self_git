@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+#include "include.h"
+#include "cache.h"
 
 extern char *optarg;
 extern int opterr;
@@ -27,12 +29,14 @@ int main(int argc,char **argv)
                 switch(c)
                 {
                         case 'i':
+                                init(argc,argv);
                                 printf("Reinitialized existing Git repository!\n");
                                 break;
                         case 's':
                                 printf("On branch master\n");
                                 break;
                         case 'a':
+                                update_cache(argc, argv);
                                 printf("%s is added to cache!\n",optarg);
                                 break;
                         case 'c':
