@@ -2,8 +2,7 @@
 
 int init(int argc, char **argv)
 {
-	char *sha1_dir = getenv(DB_ENVIRONMENT);
-    char *path;
+	char *sha1_dir = getenv(DB_ENVIRONMENT), *path;
 	int len, i, fd;
 
 	if (mkdir(".dircache", 0700) < 0) {
@@ -21,7 +20,7 @@ int init(int argc, char **argv)
 	if (sha1_dir) {
 		struct stat st;
 		if (!stat(sha1_dir, &st) < 0 && S_ISDIR(st.st_mode))
-			return 0;
+			return;
 		fprintf(stderr, "DB_ENVIRONMENT set to bad directory %s: ", sha1_dir);
 	}
 
@@ -37,10 +36,8 @@ int init(int argc, char **argv)
 			exit(1);
 		}
 	}
-
-	path = (char*)malloc(len + 40);
+	path = malloc(len + 40);
 	memcpy(path, sha1_dir, len);
-
 	for (i = 0; i < 256; i++) {
 		sprintf(path+len, "/%02x", i);
 		if (mkdir(path, 0700) < 0) {
