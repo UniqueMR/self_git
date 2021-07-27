@@ -9,6 +9,7 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <sys/mman.h>
+
 #include <openssl/sha.h>
 #include <zlib.h>
 
@@ -21,13 +22,13 @@
  */
 
 #define CACHE_SIGNATURE 0x44495243	/* "DIRC" */
-
 struct cache_header {
 	unsigned int signature;
 	unsigned int version;
 	unsigned int entries;
 	unsigned char sha1[20];
 };
+
 /*
  * The "cache_time" is just the low 32 bits of the
  * time. It doesn't matter if it overflows - we only
@@ -57,6 +58,9 @@ struct cache_entry {
 	unsigned char name[0];
 };
 
+const char *sha1_file_directory;
+struct cache_entry **active_cache;
+unsigned int active_nr, active_alloc;
 
 #define DB_ENVIRONMENT "SHA1_FILE_DIRECTORY"
 #define DEFAULT_DB_ENVIRONMENT ".dircache/objects"
