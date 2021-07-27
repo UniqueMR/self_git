@@ -1,7 +1,4 @@
-# include "cache.h"
-
-struct cache_entry **active_cache = NULL;
-unsigned int active_nr = 0, active_alloc = 0;
+#include "cache.h"
 
 //对cache的命名进行比较
 static int cache_name_compare(const char *name1, int len1, const char *name2, int len2)
@@ -32,7 +29,6 @@ static int cache_name_pos(const char *name, int namelen)
 		int next = (last + first) >> 1;
 		struct cache_entry *ce = active_cache[next];//对cache进行扫描，逐一判断是否和当前名称匹配
 		int cmp = cache_name_compare(name, namelen, ce->name, ce->namelen);
-
 		//如果等于0说明匹配完成
 		//这里取负号是为了使得匹配成功后的返回值小于0，从而通过返回值小于0判断匹配成功
 		//最终还要-1是防止第一个cache就匹配成功，从而使得返回值并不小于0
@@ -54,14 +50,14 @@ static int cache_name_pos(const char *name, int namelen)
 static int remove_file_from_cache(char *path)
 {
 	int pos = cache_name_pos(path, strlen(path));//定位所要删除的文件
-	if (pos < 0)//由cache_name_pos可知，当匹配成功时，返回值为-next-1小于0
+	if (pos < 0)//由cache_name_pos可知，当匹配成功时，返回值为-next-1小于0 
 	{
-		pos = -pos-1;//真正的位置
-		active_nr--;//删除后更新
+		//memmove用于拷贝字节，如果目标区域和源区域有重叠的话，memmove能够保证源串在被覆盖之前将重叠区域的字节拷贝到目标区域中，但复制后源内容会被更改
+		//原型：void *memmove( void* dest, const void* src, size_t count );由src所指内存区域复制count个字节到dest所指内存区域。
+		//这里通过将后面cache的向前覆盖，从而实现对指定cache内容的删除
+		pos = -pos-1;
+		active_nr--;
 		if (pos < active_nr)
-			//memmove用于拷贝字节，如果目标区域和源区域有重叠的话，memmove能够保证源串在被覆盖之前将重叠区域的字节拷贝到目标区域中，但复制后源内容会被更改
-			//原型：void *memmove( void* dest, const void* src, size_t count );由src所指内存区域复制count个字节到dest所指内存区域。
-			//这里通过将后面cache的向前覆盖，从而实现对指定cache内容的删除
 			memmove(active_cache + pos, active_cache + pos + 1, (active_nr - pos - 1) * sizeof(struct cache_entry *));
 	}
 }
@@ -75,7 +71,6 @@ static int add_cache_entry(struct cache_entry *ce)
 
 	/* existing match? Just replace it */
 	if (pos < 0) {
-		//同理可知-pos-1才是真实位置
 		active_cache[-pos-1] = ce;
 		return 0;
 	}
@@ -96,10 +91,8 @@ static int add_cache_entry(struct cache_entry *ce)
 }
 
 //维护index文件
-static int index_fd(const char *path, int namelen,struct cache_entry *ce, int fd,struct stat *st)
+static int index_fd(const char *path, int namelen, struct cache_entry *ce, int fd, struct stat *st)
 {
-	//属于zlib库zlib.h
-	//zlib可以实现文件的压缩与解压
 	z_stream stream;
 	int max_out_bytes = namelen + st->st_size + 200;//最大输出字节数
 	void *out = malloc(max_out_bytes);
@@ -134,7 +127,6 @@ static int index_fd(const char *path, int namelen,struct cache_entry *ce, int fd
 	stream.avail_in = 1+sprintf(metadata, "blob %lu", (unsigned long) st->st_size);
 	stream.next_out = out;
 	stream.avail_out = max_out_bytes;
-	//开始压缩
 	while (deflate(&stream, 0) == Z_OK)
 		/* nothing */;
 
@@ -167,15 +159,14 @@ static int add_file_to_cache(char *path)
 
 	//打开路径为path的文件
 	fd = open(path, O_RDONLY);
-	if (fd < 0)//打开失败 
+	if (fd < 0)//打开失败  
 	{
 		if (errno == ENOENT)
 			return remove_file_from_cache(path);
 		return -1;
 	}
 	//fd为文件描述词，st为保存文件信息的结构体
-	if (fstat(fd, &st) < 0) 
-	{
+	if (fstat(fd, &st) < 0) {
 		close(fd);
 		return -1;
 	}
@@ -202,7 +193,6 @@ static int add_file_to_cache(char *path)
 	if (index_fd(path, namelen, ce, fd, &st) < 0)
 		return -1;
 
-	
 	return add_cache_entry(ce);
 }
 
@@ -276,7 +266,6 @@ int update_cache(int argc, char **argv)
 		perror("cache corrupted");
 		return -1;
 	}
-
 	//获取".dircache/index.lock"文件的描述符
 	newfd = open(".dircache/index.lock", O_RDWR | O_CREAT | O_EXCL, 0600);
 	if (newfd < 0) {

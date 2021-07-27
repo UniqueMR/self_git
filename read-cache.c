@@ -1,5 +1,7 @@
 #include "cache.h"
 
+
+
 const char *sha1_file_directory = NULL;
 struct cache_entry **active_cache = NULL;
 unsigned int active_nr = 0, active_alloc = 0;
@@ -60,7 +62,7 @@ char *sha1_file_name(unsigned char *sha1)
 	static char *name, *base;
 
 	if (!base) {
-		const char *sha1_file_directory = getenv(DB_ENVIRONMENT) ? : DEFAULT_DB_ENVIRONMENT;
+		char *sha1_file_directory = getenv(DB_ENVIRONMENT) ? : DEFAULT_DB_ENVIRONMENT;
 		int len = strlen(sha1_file_directory);
 		base = malloc(len + 60);
 		memcpy(base, sha1_file_directory, len);
@@ -208,7 +210,7 @@ int read_cache(void)
 	struct stat st;
 	unsigned long size, offset;
 	void *map;
-    struct cache_header *hdr;
+	struct cache_header *hdr;
 
 	errno = EBUSY;
 	if (active_cache)
