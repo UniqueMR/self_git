@@ -36,3 +36,15 @@
 
 ###笔记
 * argc存储变量数量，argv存储变量内容。在本项目中，argc为终端输入字符串的数目，argv为终端输入的每个字符串（不同的字符串用空格隔开）
+
+* 错误处理：undefined reference to
+这种错误指向所涉及的函数未能找到具体的实现。
+
+未能找到具体实现的原因是多方面的。就本例而言，虽然程序中声明了zlib库和openssl/sha库，但是和stdio.h不同，这两个库在头文件中并没有对函数进行实现，而仅仅只是对相应的函数进行了声明，因此导致缺少相应函数的实现
+
+解决的方法是在链接的步骤中加入相应的参数，告知连接器需要对相应的源文件进行链接
+
+```
+gcc command.c init-db.c read-cache.c update-cache.c cat-file.c -o git -lz -lcrypto
+```
+其中-lz对应zlib，-lcrypto对应openssl/sha
