@@ -33,6 +33,71 @@
 * 初代版本使用的是sha1算法
 
 ### zlib压缩算法
+* 利用zlib进行压缩操作的流程
+1. 创建z_stream对象stream和SHA_CTX对象c
+```c
+z_stream stream; 
+SHA_CTX c;
+```
+2. 对stream对象进行初始化操作
+```c
+	memset(&stream, 0, sizeof(stream));
+	deflateInit(&stream, Z_BEST_COMPRESSION);
+	size = deflateBound(&stream, len);
+	compressed = malloc(size);
+
+```
+
+3. 进行压缩操作
+```c
+	stream.next_in = buf;//buf为sha1值
+	stream.avail_in = len;
+	stream.next_out = compressed;
+	stream.avail_out = size;
+	while (deflate(&stream, Z_FINISH) == Z_OK);//不断进行压缩直到压缩完成
+	deflateEnd(&stream);
+	size = stream.total_out;
+```
+
+4. 获取sha1值(利用之前创建的SHA_CTX对象)
+```c
+	SHA1_Init(&c);
+	SHA1_Update(&c, compressed, size);
+	SHA1_Final(sha1, &c);
+```
+
+
+### sha1(secure hash algorithm 1)
+* sha1可以生成一个被称为消息摘要的160位（20字节）散列值，散列值的通常呈现形式为40个16进制数
+* 相关函数
+
+int SHA1_Init(SHA_CTX *c): SHA1_Init() 是一个初始化参数，它用来初始化一个 SHA_CTX 结构，该结构存放弄了生成 SHA1 散列值的一些参数，在应用中可以不用关系该结构的内容。
+
+
+int SHA1_Update(SHA_CTX *c, const void *data, unsigned long len): SHA1_Update() 函数正是可以处理大文件的关键。它可以反复调用，比如说我们要计算一个 5G 文件的散列值，我们可以将该文件分割成多个小的数据块，对每个数据块分别调用一次该函数，这样在最后就能够应用 SHA1_Final() 函数正确计算出这个大文件的 sha1 散列值。
+
+
+int SHA1_Final(unsigned char *md, SHA_CTX *c)
+
+### struct stat结构体：保存文件状态信息的结构体
+```c
+struct stat 
+{ 
+   dev_t     st_dev;     /* 文件所在设备的标识  */ 
+   ino_t     st_ino;     /* 文件结点号  */ 
+   mode_t    st_mode;    /* 文件保护模式  */ 
+   nlink_t   st_nlink;   /* 硬连接数  */ 
+   uid_t     st_uid;     /* 文件用户标识  */ 
+   gid_t     st_gid;     /* 文件用户组标识  */ 
+   dev_t     st_rdev;    /* 文件所表示的特殊设备文件的设备标识  */ 
+   off_t     st_size;    /* 总大小，字节为单位  */ 
+   blksize_t st_blksize; /* 文件系统的块大小  */ 
+   blkcnt_t  st_blocks;  /* 分配给文件的块的数量，512字节为单元  */ 
+   time_t    st_atime;   /* 最后访问时间  */ 
+   time_t    st_mtime;   /* 最后修改时间  */ 
+   time_t    st_ctime;   /* 最后状态改变时间  */ 
+}; 
+```
 
 ###笔记
 * argc存储变量数量，argv存储变量内容。在本项目中，argc为终端输入字符串的数目，argv为终端输入的每个字符串（不同的字符串用空格隔开）

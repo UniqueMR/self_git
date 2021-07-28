@@ -15,6 +15,7 @@ int main(int argc,char **argv)
         struct option opts[] = {
         {"init",no_argument,NULL,'i'},
         {"status",no_argument,NULL,'s'},
+        {"diff",no_argument,NULL,'d'},
         {"add",required_argument,NULL,'a'},
         {"commit",no_argument,NULL,'c'},
         {"reset",no_argument,NULL,'r'},
@@ -25,7 +26,7 @@ int main(int argc,char **argv)
 
         opterr = 0;
 
-        while((c=getopt_long(argc,argv,"isa:crm:f:",opts,NULL)) != -1)
+        while((c=getopt_long(argc,argv,"isda:crm:f:",opts,NULL)) != -1)
         {
                 switch(c)
                 {
@@ -40,7 +41,11 @@ int main(int argc,char **argv)
                                 update_cache(argc, argv);
                                 printf("%s is added to cache!\n",optarg);
                                 break;
+                        case 'd':
+                                show_diff(argc,argv);
+                                break;
                         case 'c':
+                                commit(argc,argv);
                                 printf("Completed to commmit!\n");
                                 break;
                         case 'r':

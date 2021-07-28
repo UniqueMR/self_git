@@ -141,7 +141,7 @@ static int index_fd(const char *path, int namelen, struct cache_entry *ce, int f
 	//结束压缩
 	deflateEnd(&stream);
 	
-	//生成sha1值
+	//生成sha1值，写入到ce->sha1中
 	SHA1_Init(&c);
 	SHA1_Update(&c, out, stream.total_out);
 	SHA1_Final(ce->sha1, &c);

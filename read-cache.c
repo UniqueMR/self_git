@@ -12,6 +12,7 @@ void usage(const char *err)
 	exit(1);
 }
 
+//得到输入字符的16进制值
 static unsigned hexval(char c)
 {
 	if (c >= '0' && c <= '9')
@@ -36,6 +37,7 @@ int get_sha1_hex(char *hex, unsigned char *sha1)
 	return 0;
 }
 
+//将sha1转化成十六进制值
 char * sha1_to_hex(unsigned char *sha1)
 {
 	static char buffer[50];
@@ -56,11 +58,11 @@ char * sha1_to_hex(unsigned char *sha1)
  * careful about using it. Do a "strdup()" if you need to save the
  * filename.
  */
+//根据sha1值得到sha1文件的路径
 char *sha1_file_name(unsigned char *sha1)
 {
 	int i;
 	static char *name, *base;
-
 	if (!base) {
 		char *sha1_file_directory = getenv(DB_ENVIRONMENT) ? : DEFAULT_DB_ENVIRONMENT;
 		int len = strlen(sha1_file_directory);
@@ -81,6 +83,7 @@ char *sha1_file_name(unsigned char *sha1)
 	return base;
 }
 
+//读取sha1文件
 void * read_sha1_file(unsigned char *sha1, char *type, unsigned long *size)
 {
 	z_stream stream;
@@ -88,14 +91,15 @@ void * read_sha1_file(unsigned char *sha1, char *type, unsigned long *size)
 	struct stat st;
 	int i, fd, ret, bytes;
 	void *map, *buf;
-	char *filename = sha1_file_name(sha1);
+	char *filename = sha1_file_name(sha1);//将sha1值转换为路径
 
-	fd = open(filename, O_RDONLY);
+	fd = open(filename, O_RDONLY);//根据路径获取文件
 	if (fd < 0) {
 		perror(filename);
 		return NULL;
 	}
-	if (fstat(fd, &st) < 0) {
+	if (fstat(fd, &st) < 0)//fstat系统功能调用，获取文件信息于st中 
+	{
 		close(fd);
 		return NULL;
 	}
@@ -111,6 +115,7 @@ void * read_sha1_file(unsigned char *sha1, char *type, unsigned long *size)
 	stream.next_out = buffer;
 	stream.avail_out = sizeof(buffer);
 
+	//对数据流进行解压缩
 	inflateInit(&stream);
 	ret = inflate(&stream, 0);
 	if (sscanf(buffer, "%10s %lu", type, size) != 2)
@@ -120,18 +125,21 @@ void * read_sha1_file(unsigned char *sha1, char *type, unsigned long *size)
 	if (!buf)
 		return NULL;
 
-	memcpy(buf, buffer + bytes, stream.total_out - bytes);
+	//从源source所指的内存地址的起始位置开始拷贝n个字节到目标destin所指的内存地址的起始位置中
+	//void *memcpy(void *destin, void *source, unsigned n);
+	memcpy(buf, buffer + bytes, stream.total_out - bytes);//拷贝
 	bytes = stream.total_out - bytes;
 	if (bytes < *size && ret == Z_OK) {
 		stream.next_out = buf + bytes;
 		stream.avail_out = *size - bytes;
-		while (inflate(&stream, Z_FINISH) == Z_OK)
+		while (inflate(&stream, Z_FINISH) == Z_OK)//不断进行解压缩操作，直到解压完成
 			/* nothing */;
 	}
 	inflateEnd(&stream);
 	return buf;
 }
 
+//写sha1文件
 int write_sha1_file(char *buf, unsigned len)
 {
 	int size;
@@ -167,12 +175,13 @@ int write_sha1_file(char *buf, unsigned len)
 	return 0;
 }
 
+//写sha1缓冲区
 int write_sha1_buffer(unsigned char *sha1, void *buf, unsigned int size)
 {
-	char *filename = sha1_file_name(sha1);
+	char *filename = sha1_file_name(sha1);//根据sha1值得到sha1文件的名称
 	int i, fd;
 
-	fd = open(filename, O_WRONLY | O_CREAT | O_EXCL, 0666);
+	fd = open(filename, O_WRONLY | O_CREAT | O_EXCL, 0666);//获取文件资源
 	if (fd < 0)
 		return (errno == EEXIST) ? 0 : -1;
 	write(fd, buf, size);
@@ -186,6 +195,7 @@ static int error(const char * string)
 	return -1;
 }
 
+//验证cache_header
 static int verify_hdr(struct cache_header *hdr, unsigned long size)
 {
 	SHA_CTX c;
@@ -204,6 +214,7 @@ static int verify_hdr(struct cache_header *hdr, unsigned long size)
 	return 0;
 }
 
+//读缓冲区
 int read_cache(void)
 {
 	int fd, i;
