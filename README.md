@@ -23,6 +23,11 @@ self_git
 4. 进一步理解了C程序从源代码到可执行文件的过程
 
 7月28日：
+1. 成功实现show-diff，对应diff命令，将workspace中的文件状态和index中的文件状态进行比较并显示
+2. 成功实现write-tree，将记录当前blob的tree文件写入cache中
+3. 尝试实现commit-tree，将记录当前版本的commit文件写入cache中
+4. 成功用makefile进行多文件编译
+5. 进一步理解了利用zlib进行压缩和解压的操作流程
 
 7月29日：
 
