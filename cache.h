@@ -22,6 +22,7 @@
  */
 
 #define CACHE_SIGNATURE 0x44495243	/* "DIRC" */
+//cache_header理解为commit对象？
 struct cache_header {
 	unsigned int signature;
 	unsigned int version;

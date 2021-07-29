@@ -1,6 +1,6 @@
 #include "cache.h"
 
-int status(int argc, char **argv)
+int cat_file(int argc, char **argv)
 {
 	unsigned char sha1[20];
 	char type[20];
@@ -8,9 +8,6 @@ int status(int argc, char **argv)
 	unsigned long size;
 	char template[] = "temp_git_file_XXXXXX";
 	int fd;
-
-	printf("%d\n",argc);
-	printf("%s\n",argv[2]);
 
 	if (argc != 3 || get_sha1_hex(argv[2], sha1))
 		usage("cat-file: cat-file <sha1>");

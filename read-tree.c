@@ -6,10 +6,10 @@ static int unpack(unsigned char *sha1)
 	unsigned long size;
 	char type[20];
 
-	buffer = read_sha1_file(sha1, type, &size);
+	buffer = read_sha1_file(sha1, type, &size);//获取sha1文件的内容存储在buffer中，文件类型存储于type中
 	if (!buffer)
 		usage("unable to read sha1 file");
-	if (strcmp(type, "tree"))
+	if (strcmp(type, "tree"))//确定文件类型是否为tree类型
 		usage("expected a 'tree' node");
 	while (size) {
 		int len = strlen(buffer)+1;
@@ -20,19 +20,19 @@ static int unpack(unsigned char *sha1)
 			usage("corrupt 'tree' file");
 		buffer = sha1 + 20;
 		size -= len + 20;
-		printf("%o %s (%s)\n", mode, path, sha1_to_hex(sha1));
+		printf("%o %s (%s)\n", mode, path, sha1_to_hex(sha1));//输出变更文件的属性，路径以及sha1值
 	}
 	return 0;
 }
 
-int main(int argc, char **argv)
+int read_tree(int argc, char **argv)
 {
 	int fd;
 	unsigned char sha1[20];
 
-	if (argc != 2)
+	if (argc != 3)
 		usage("read-tree <key>");
-	if (get_sha1_hex(argv[1], sha1) < 0)
+	if (get_sha1_hex(argv[2], sha1) < 0)
 		usage("read-tree <key>");
 	sha1_file_directory = getenv(DB_ENVIRONMENT);
 	if (!sha1_file_directory)

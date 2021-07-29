@@ -44,6 +44,7 @@ static void add_buffer(char **bufp, unsigned int *sizep, const char *fmt, ...)
 	memcpy(buf + size, one_line, len);
 }
 
+//将数值val转换成数组的形式（类比数据流）（以大字节序存储，即数组的高位存储整数的低位）
 static int prepend_integer(char *buffer, unsigned val, int i)
 {
 	buffer[--i] = '\0';
@@ -100,6 +101,7 @@ static void remove_special(char *p)
  */
 #define MAXPARENT (16)
 
+//
 int commit_tree(int argc, char **argv)
 {
 	int i, len;
@@ -118,7 +120,7 @@ int commit_tree(int argc, char **argv)
 	if (argc < 3 || get_sha1_hex(argv[2], tree_sha1) < 0)
 		usage("commit-tree <sha1> [-p <sha1>]* < changelog");
 
-	for (i = 2; i < argc; i += 2) {
+	for (i = 3; i < argc; i += 2) {
 		printf("....\n");
 		char *a, *b;
 		a = argv[i]; b = argv[i+1];

@@ -99,6 +99,70 @@ struct stat
 }; 
 ```
 
+### z_stream结构体：
+* 属于zlib库
+* 结构体定义
+```c
+typedef struct z_stream_s {
+   Bytef   *next_in;//流的输入
+   uInt    avail_in;//当avail_in下降到0时，更新avail_in和next_in 
+   uLong   total_in; 
+
+   Bytef   *next_out;//流的输出
+   uInt    avail_out;//当avail_out下降到0时，更新next_out
+   uLong   total_out;
+
+   char    *msg;     
+   struct internal_state FAR *state;
+
+   //在调用初始化函数前，应用程序先初始化zalloc，zfree和opaque，其他字段都会被压缩库赋值，不会被应用程序更新
+   alloc_func zalloc; 
+   free_func zfree;  
+   voidpf    opaque; 
+
+   int    data_type; 
+   uLong  adler;     
+   uLong  reserved;  
+} z_stream; 
+```
+* 工作原理
+
+输入到 Zlib :: ZStream 实例中的数据临时存储到输入缓冲区的末尾，然后从缓冲区的开始处理输入缓冲区中的数据，直到不再有来自该流的输出产生为止（即，直到 #avail_out> 0处理后）。在处理期间，输出缓冲区被自动分配和扩展以保存所有输出数据。
+
+### C语言文件处理 常见的C文件IO
+* 文件描述符
+在UNIX系统种，一切皆文件，对于每个打开的（注意是打开的）文件都有一个对应的非负整数作为其文件描述符，其中标准输入（可理解为你在终端中输入的内容），标准输出（可理解为往终端上输出），标准错误（用来输出错误信息）分别对应0， 1， 2的默认文件描述符。所以再有其他打开的文件时，描述符会从未被使用的最小整数开始（从3开始）。
+
+* open
+```c
+int open(const char *path, int oflag, ...mode);//oflag设定对文件操作权限的标志位
+```
+​ O_RDONLY：只读方式打开文件。
+​ O_WRONLY：可写方式打开文件。
+​ O_RDWR： 读写方式打开文件。
+ O_CREAT：如果该文件不存在，就创建一个新的文件，并用第三个参数为其设置权限。
+​ O_TRUNC：如文件已经存在，那么打开文件时将文件长度截取为0（即达到清空文件的目的）
+​ O_APPEND：以添加方式打开文件，所有对文件的写操作都在文件的末尾进行（可理解为打开文件时将光标放在末尾）。
+
+* close
+fd为文件描述符，close用于关闭文件描述符所对应的文件
+```c
+int close(int fd);
+```
+
+* read
+用于从打开文件读取数据
+```c
+ssize_t read(int fd, void *buf, size_t nbytes);//fd为已打开文件的描述符，buf用于存储从fd文件中读取到的数据,nbytes为读取的大小
+```
+ssize_t 为有符号整型
+
+* write
+向打开的文件写数据
+```c
+ssize_t write(int fd, const void * buf, size_t nbytes);//fd为文件的描述符，buf存放将要写入文件的数据，nbytes为要求写入的字数，返回值为已经写入的字数，出错则返回-1
+```
+
 ###笔记
 * argc存储变量数量，argv存储变量内容。在本项目中，argc为终端输入字符串的数目，argv为终端输入的每个字符串（不同的字符串用空格隔开）
 
@@ -113,3 +177,30 @@ struct stat
 gcc command.c init-db.c read-cache.c update-cache.c cat-file.c -o git -lz -lcrypto
 ```
 其中-lz对应zlib，-lcrypto对应openssl/sha
+
+* void和void*
+void 不能用来声明变量，只能用于对函数返回类型的限定和对函数参数限定
+
+void* 为不确定类型的指针，可以用来声明指针，接受任何类型的赋值。同时可以赋值给任何类型的变量，但是需要进行强制类型转换
+```c
+    int * a = NULL ；
+    void * b ；
+    a =（int *）b；
+```
+
+* mmap函数
+属于sys/mman.h，实现内存映射，将普通文件映射到内存中
+
+void *mmap(void *start,size_t length,int prot,int flags,int fd,off_t offsize);
+
+参数start：指向欲映射的内存起始地址，通常设为 NULL，代表让系统自动选定地址，映射成功后返回该地址。
+
+参数length：代表将文件中多大的部分映射到内存。
+
+参数prot：映射区域的保护方式。可以为以下几种方式的组合：
+	
+	PROT_EXEC       映射区域可被执行
+	PROT_READ       映射区域可被读取
+	PROT_WRITE      映射区域可被写入
+	PROT_NONE       映射区域不能存取
+	参数flags：影响映射区域的各种特性。在调用mmap()时必须要指定MAP_SHARED 或MAP_PRIVATE。

@@ -24,10 +24,12 @@ static unsigned hexval(char c)
 	return ~0;
 }
 
+//将表示16进制数的字符串转化为表示sha1值的字符串(字符串中的每个字符存储一个字节，总共20字节)
 int get_sha1_hex(char *hex, unsigned char *sha1)
 {
 	int i;
-	for (i = 0; i < 20; i++) {
+	for (i = 0; i < 20; i++)//循环20次因为sha1值总是20字节
+	{
 		unsigned int val = (hexval(hex[0]) << 4) | hexval(hex[1]);
 		if (val & ~0xff)
 			return -1;
@@ -45,10 +47,11 @@ char * sha1_to_hex(unsigned char *sha1)
 	char *buf = buffer;
 	int i;
 
-	for (i = 0; i < 20; i++) {
+	for (i = 0; i < 20; i++)//循环20次因为sha1值总是20字节
+	{
 		unsigned int val = *sha1++;
-		*buf++ = hex[val >> 4];
-		*buf++ = hex[val & 0xf];
+		*buf++ = hex[val >> 4];//sha1字节的前四位作为索引，找到对应的十六进制值
+		*buf++ = hex[val & 0xf];//sha1字节的后四位作为索引，找到对应的十六进制值
 	}
 	return buffer;
 }
@@ -64,33 +67,34 @@ char *sha1_file_name(unsigned char *sha1)
 	int i;
 	static char *name, *base;
 	if (!base) {
-		char *sha1_file_directory = getenv(DB_ENVIRONMENT) ? : DEFAULT_DB_ENVIRONMENT;
+		char *sha1_file_directory = getenv(DB_ENVIRONMENT) ? : DEFAULT_DB_ENVIRONMENT;//首先定位sha1文件的目录
 		int len = strlen(sha1_file_directory);
 		base = malloc(len + 60);
-		memcpy(base, sha1_file_directory, len);
-		memset(base+len, 0, 60);
+		memcpy(base, sha1_file_directory, len);//将sha1文件目录（字符串首地址开始后len位拷贝到base中）
+		memset(base+len, 0, 60);//将base+len地址开始的后60位设置为0
 		base[len] = '/';
 		base[len+3] = '/';
 		name = base + len + 1;
 	}
+	//将sha1转换成16进制值
 	for (i = 0; i < 20; i++) {
 		static char hex[] = "0123456789abcdef";
 		unsigned int val = sha1[i];
 		char *pos = name + i*2 + (i > 0);
-		*pos++ = hex[val >> 4];
-		*pos = hex[val & 0xf];
+		*pos++ = hex[val >> 4];//sha1字节的前四位作为索引，找到对应的十六进制值
+		*pos = hex[val & 0xf];//sha1字节的后四位作为索引，找到对应的十六进制值
 	}
 	return base;
 }
 
-//读取sha1文件
+//读取sha1文件（对传入的sha1进行解压操作）
 void * read_sha1_file(unsigned char *sha1, char *type, unsigned long *size)
 {
 	z_stream stream;
 	char buffer[8192];
 	struct stat st;
 	int i, fd, ret, bytes;
-	void *map, *buf;
+	void *map, *buf;//用void声明的指针，可以被任何类型赋值
 	char *filename = sha1_file_name(sha1);//将sha1值转换为路径
 
 	fd = open(filename, O_RDONLY);//根据路径获取文件
@@ -103,17 +107,18 @@ void * read_sha1_file(unsigned char *sha1, char *type, unsigned long *size)
 		close(fd);
 		return NULL;
 	}
+	//内存映射，将文件信息映射到内存中，内存空间自动分配（起点参数为null）
 	map = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	close(fd);
 	if (-1 == (int)(long)map)
 		return NULL;
 
 	/* Get the data stream */
-	memset(&stream, 0, sizeof(stream));
-	stream.next_in = map;
-	stream.avail_in = st.st_size;
-	stream.next_out = buffer;
-	stream.avail_out = sizeof(buffer);
+	memset(&stream, 0, sizeof(stream));//将stream的所有位设置为0
+	stream.next_in = map;//输入缓冲区起点为map
+	stream.avail_in = st.st_size;//输入数据量为st_size
+	stream.next_out = buffer;//输出缓冲区为buffer
+	stream.avail_out = sizeof(buffer);//最大输出为buffer的容积
 
 	//对数据流进行解压缩
 	inflateInit(&stream);
@@ -139,7 +144,7 @@ void * read_sha1_file(unsigned char *sha1, char *type, unsigned long *size)
 	return buf;
 }
 
-//写sha1文件
+//写sha1文件（对输入的buf进行压缩操作）
 int write_sha1_file(char *buf, unsigned len)
 {
 	int size;
@@ -155,33 +160,34 @@ int write_sha1_file(char *buf, unsigned len)
 	compressed = malloc(size);
 
 	/* Compress it */
-	stream.next_in = buf;
-	stream.avail_in = len;
-	stream.next_out = compressed;
-	stream.avail_out = size;
+	stream.next_in = buf;//stream输入缓冲区起点设置为buf,输入文件内容
+	stream.avail_in = len;//输入长度设置为len 
+	stream.next_out = compressed;//输出缓冲区起点为compressed容器，存储压缩结果
+	stream.avail_out = size;//输出长度设置为size
 	while (deflate(&stream, Z_FINISH) == Z_OK)
 		/* nothing */;
 	deflateEnd(&stream);
 	size = stream.total_out;
 
 	/* Sha1.. */
+	//将压缩结果转化为20字节sha1值
 	SHA1_Init(&c);
 	SHA1_Update(&c, compressed, size);
 	SHA1_Final(sha1, &c);
 
 	if (write_sha1_buffer(sha1, compressed, size) < 0)
 		return -1;
-	printf("%s\n", sha1_to_hex(sha1));
+	printf("%s\n", sha1_to_hex(sha1));//打印sha1值
 	return 0;
 }
 
-//写sha1缓冲区
+//写sha1文件
 int write_sha1_buffer(unsigned char *sha1, void *buf, unsigned int size)
 {
-	char *filename = sha1_file_name(sha1);//根据sha1值得到sha1文件的名称
+	char *filename = sha1_file_name(sha1);//根据sha1值得到sha1文件的路径
 	int i, fd;
 
-	fd = open(filename, O_WRONLY | O_CREAT | O_EXCL, 0666);//获取文件资源
+	fd = open(filename, O_WRONLY | O_CREAT | O_EXCL, 0666);//获取文件资源（由SHA1文件目录和sha1值共同决定）
 	if (fd < 0)
 		return (errno == EEXIST) ? 0 : -1;
 	write(fd, buf, size);
@@ -206,6 +212,8 @@ static int verify_hdr(struct cache_header *hdr, unsigned long size)
 	if (hdr->version != 1)
 		return error("bad version");
 	SHA1_Init(&c);
+	//int SHA1_Update(SHA_CTX *c, const void *data, unsigned long len);
+	//第二个参数const void *data为void类型的指针，可以被任何地址赋值
 	SHA1_Update(&c, hdr, offsetof(struct cache_header, sha1));
 	SHA1_Update(&c, hdr+1, size - sizeof(*hdr));
 	SHA1_Final(sha1, &c);
@@ -227,12 +235,12 @@ int read_cache(void)
 	if (active_cache)
 		return error("more than one cachefile");
 	errno = ENOENT;
-	sha1_file_directory = getenv(DB_ENVIRONMENT);
+	sha1_file_directory = getenv(DB_ENVIRONMENT);//获取sha1文件目录
 	if (!sha1_file_directory)
 		sha1_file_directory = DEFAULT_DB_ENVIRONMENT;
 	if (access(sha1_file_directory, X_OK) < 0)
 		return error("no access to SHA1 file directory");
-	fd = open(".dircache/index", O_RDONLY);
+	fd = open(".dircache/index", O_RDONLY);//以只读方式打开index文件
 	if (fd < 0)
 		return (errno == ENOENT) ? 0 : error("open failed");
 
@@ -242,13 +250,13 @@ int read_cache(void)
 		size = st.st_size;
 		errno = EINVAL;
 		if (size > sizeof(struct cache_header))
-			map = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+			map = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);//将文件映射至内存
 	}
-	close(fd);
+	close(fd);//关闭index文件
 	if (-1 == (int)(long)map)
 		return error("mmap failed");
 
-	hdr = map;
+	hdr = map;//hdr指针指向文件在内存中映射的首地址
 	if (verify_hdr(hdr, size) < 0)
 		goto unmap;
 

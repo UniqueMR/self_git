@@ -1,7 +1,7 @@
 CFLAGS=-c
 CC=gcc
 
-PROG = command.o update-cache.o read-cache.o show-diff.o init-db.o cat-file.o commit-tree.o write-tree.o commit.o 
+PROG = command.o update-cache.o read-cache.o show-diff.o init-db.o cat-file.o commit-tree.o write-tree.o commit.o read-tree.o
 
 LIBS= -lssl -lz -lcrypto
 
@@ -34,6 +34,9 @@ commit.o: commit.c
 
 read-cache.o: read-cache.c
 	$(CC) $(CFLAGS) read-cache.c -o read-cache.o $(LIBS)
+
+read-tree.o: read-tree.c
+	$(CC) $(CFLAGS) read-tree.c -o read-tree.o $(LIBS)
  
 .PHONY:
 clear: 

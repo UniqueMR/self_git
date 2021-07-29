@@ -17,16 +17,17 @@ int main(int argc,char **argv)
         {"status",no_argument,NULL,'s'},
         {"diff",no_argument,NULL,'d'},
         {"add",required_argument,NULL,'a'},
-        {"commit",no_argument,NULL,'c'},
+        {"commit",required_argument,NULL,'c'},
         {"reset",no_argument,NULL,'r'},
         {"rm",required_argument,NULL,'m'},
         {"cat-file",required_argument,NULL,'f'},
+        {"read-tree",required_argument,NULL,'e'},
         {0,0,0,0}
         };
 
         opterr = 0;
 
-        while((c=getopt_long(argc,argv,"isda:crm:f:",opts,NULL)) != -1)
+        while((c=getopt_long(argc,argv,"isda:c:rm:f:e:",opts,NULL)) != -1)
         {
                 switch(c)
                 {
@@ -55,8 +56,10 @@ int main(int argc,char **argv)
                                 printf("%s has been removed!\n",optarg);
                                 break;
                         case 'f':
-                                status(argc,argv);
+                                cat_file(argc,argv);
                                 break;
+                        case 'e':
+                                read_tree(argc,argv);
                         case '?':
                                 printf("Usage : \n"
                                 "--init : init a git repository\n"
