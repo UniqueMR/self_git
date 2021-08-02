@@ -10,14 +10,15 @@ extern int opterr;
 
 int main(int argc,char **argv)
 {
+
         int c,index;
 
         struct option opts[] = {
         {"init",no_argument,NULL,'i'},
-        {"status",no_argument,NULL,'s'},
+        {"status",required_argument,NULL,'s'},
         {"diff",no_argument,NULL,'d'},
         {"add",required_argument,NULL,'a'},
-        {"commit",required_argument,NULL,'c'},
+        {"commit",no_argument,NULL,'c'},
         {"reset",no_argument,NULL,'r'},
         {"rm",required_argument,NULL,'m'},
         {"cat-file",required_argument,NULL,'f'},
@@ -27,7 +28,7 @@ int main(int argc,char **argv)
 
         opterr = 0;
 
-        while((c=getopt_long(argc,argv,"isda:c:rm:f:e:",opts,NULL)) != -1)
+        while((c=getopt_long(argc,argv,"is:da:c:rm:f:e:",opts,NULL)) != -1)
         {
                 switch(c)
                 {
@@ -36,6 +37,7 @@ int main(int argc,char **argv)
                                 printf("Reinitialized existing Git repository!\n");
                                 break;
                         case 's':
+                                status(argc,argv);
                                 printf("On branch master\n");
                                 break;
                         case 'a':
@@ -53,6 +55,7 @@ int main(int argc,char **argv)
                                 printf("Completed to Reset!\n");
                                 break;
                         case 'm':
+                                remove_function(argc,argv);
                                 printf("%s has been removed!\n",optarg);
                                 break;
                         case 'f':

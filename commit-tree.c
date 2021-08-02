@@ -12,6 +12,7 @@
  *
  * FIXME! Share the code with "write-tree.c"
  */
+
 static void init_buffer(char **bufp, unsigned int *sizep)
 {
 	char *buf = malloc(BLOCKING);
@@ -62,12 +63,13 @@ static void finish_buffer(char *tag, char **bufp, unsigned int *sizep)
 	char *buf = *bufp;
 	unsigned int size = *sizep;
 
+	//将size - ORGI_OFFSET转换成数组的形式存储在buf中，数组起点为offset
 	offset = prepend_integer(buf, size - ORIG_OFFSET, ORIG_OFFSET);
 	taglen = strlen(tag);
 	offset -= taglen;
 	buf += offset;
 	size -= offset;
-	memcpy(buf, tag, taglen);
+	memcpy(buf, tag, taglen);//将tag拷贝到buf开头的后taglen地址
 
 	*bufp = buf;
 	*sizep = size;
@@ -101,13 +103,19 @@ static void remove_special(char *p)
  */
 #define MAXPARENT (16)
 
-//
-int commit_tree(int argc, char **argv)
-{
+//提交树，生成commit对象
+int commit_tree(int argc, char **argv,unsigned char *tree_sha1)
+{	
 	int i, len;
 	int parents = 0;
-	unsigned char tree_sha1[20];
+	unsigned char* sha1 = (unsigned char*)malloc(20 * sizeof(unsigned char));
+	{
+		/* data */
+	};
+
+	//unsigned char tree_sha1[20];
 	unsigned char parent_sha1[MAXPARENT][20];
+	//unsigned char parent_sha1[20];
 	char *gecos, *realgecos;
 	char *email, realemail[1000];
 	char *date, *realdate;
@@ -117,19 +125,22 @@ int commit_tree(int argc, char **argv)
 	char *buffer;
 	unsigned int size;
 
-	if (argc < 3 || get_sha1_hex(argv[2], tree_sha1) < 0)
-		usage("commit-tree <sha1> [-p <sha1>]* < changelog");
+	//if (argc < 3 || get_sha1_hex(argv[2], tree_sha1) < 0)
+		//usage("commit-tree <sha1> [-p <sha1>]* < changelog");
 
-	for (i = 3; i < argc; i += 2) {
-		printf("....\n");
-		char *a, *b;
-		a = argv[i]; b = argv[i+1];
-		if (!b || strcmp(a, "-p") || get_sha1_hex(b, parent_sha1[parents]))
-			usage("commit-tree <sha1> [-p <sha1>]* < changelog");
+	for (i = 2; i < argc; i += 2) 
+	{	char *parent = argv[i];
+		if(!parent||get_sha1_hex(parent,parent_sha1[parents]))
+			usage("./git --commit <sha1> < changelog");
+		//printf("....\n");
+		//char *a, *b;
+		//a = argv[i]; b = argv[i+1];
+		//if (!b || strcmp(a, "-p") || get_sha1_hex(b, parent_sha1[parents]))
+			//usage("commit-tree <sha1> [-p <sha1>]* < changelog");
 		parents++;
 	}
 	if (!parents)
-		fprintf(stderr, "Committing initial tree %s\n", argv[1]);
+		fprintf(stderr, "Committing initial tree %s\n", sha1_to_hex(tree_sha1));
 	pw = getpwuid(getuid());
 	if (!pw)
 		usage("You don't exist. Go away!");
@@ -151,6 +162,7 @@ int commit_tree(int argc, char **argv)
 
 	init_buffer(&buffer, &size);
 	add_buffer(&buffer, &size, "tree %s\n", sha1_to_hex(tree_sha1));
+	free(tree_sha1);
 
 	/*
 	 * NOTE! This ordering means that the same exact tree merged with a
@@ -170,6 +182,6 @@ int commit_tree(int argc, char **argv)
 
 	finish_buffer("commit ", &buffer, &size);
 
-	write_sha1_file(buffer, size);
+	write_sha1_file(buffer,size,sha1);//将buffer中的内容写成sha1文件
 	return 0;
 }

@@ -22,7 +22,7 @@
  */
 
 #define CACHE_SIGNATURE 0x44495243	/* "DIRC" */
-//cache_header理解为commit对象？
+//cache_header为index文件的文件头
 struct cache_header {
 	unsigned int signature;
 	unsigned int version;
@@ -82,7 +82,7 @@ extern int write_sha1_buffer(unsigned char *sha1, void *buf, unsigned int size);
 
 /* Read and unpack a sha1 file into memory, write memory to a sha1 file */
 extern void * read_sha1_file(unsigned char *sha1, char *type, unsigned long *size);
-extern int write_sha1_file(char *buf, unsigned len);
+int write_sha1_file(char *buf, unsigned len,char *sha1);
 
 /* Convert to/from hex/sha1 representation */
 extern int get_sha1_hex(char *hex, unsigned char *sha1);
