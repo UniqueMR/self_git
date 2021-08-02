@@ -27,11 +27,13 @@ static int prepend_integer(char *buffer, unsigned val, int i)
 #define ORIG_OFFSET (40)	/* Enough space to add the header of "tree <size>\0" */
 
 //向cache中写入tree文件
-int write_tree(int argc, char **argv)
+int write_tree(int argc, char **argv,unsigned char* sha1)
 {
 	unsigned long size, offset, val;
 	int i, entries = read_cache();//读取cache，返回blob文件的数量
 	char *buffer;
+
+	char* _sha1 = (char*)malloc(20*sizeof(char));
 
 	if (entries <= 0) {
 		fprintf(stderr, "No file-cache to create a tree of\n");
@@ -66,6 +68,7 @@ int write_tree(int argc, char **argv)
 	buffer += i;
 	offset -= i;
 
-	write_sha1_file(buffer, offset);//写sha1文件，buffer为需要写入的内容
+	write_sha1_file(buffer, offset,_sha1);//写sha1文件，buffer为需要写入的内容
+	strcpy(sha1,_sha1);
 	return 0;
 }

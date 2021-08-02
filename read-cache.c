@@ -141,16 +141,16 @@ void * read_sha1_file(unsigned char *sha1, char *type, unsigned long *size)
 			/* nothing */;
 	}
 	inflateEnd(&stream);
-	return buf;
+	return buf;//将解压的结果存储在buf中返回
 }
 
 //写sha1文件（对输入的buf进行压缩操作）
-int write_sha1_file(char *buf, unsigned len)
+int write_sha1_file(char *buf, unsigned len,char *sha1)
 {
 	int size;
 	char *compressed;
 	z_stream stream;
-	unsigned char sha1[20];
+	//unsigned char sha1[20];
 	SHA_CTX c;
 
 	/* Set it up */
@@ -181,7 +181,7 @@ int write_sha1_file(char *buf, unsigned len)
 	return 0;
 }
 
-//写sha1文件
+//将压缩得到的结果写入object中的sha1文件
 int write_sha1_buffer(unsigned char *sha1, void *buf, unsigned int size)
 {
 	char *filename = sha1_file_name(sha1);//根据sha1值得到sha1文件的路径
@@ -245,7 +245,8 @@ int read_cache(void)
 		return (errno == ENOENT) ? 0 : error("open failed");
 
 	map = (void *)-1;
-	if (!fstat(fd, &st)) {
+	if (!fstat(fd, &st))//获取文件的状态信息 
+	{
 		map = NULL;
 		size = st.st_size;
 		errno = EINVAL;

@@ -46,7 +46,6 @@ static int cache_name_pos(const char *name, int namelen)
 }
 
 //在cache中删除文件，传入所要删除文件的路径
-//（这里的path理解为所要删除问价的sha1值？）
 static int remove_file_from_cache(char *path)
 {
 	int pos = cache_name_pos(path, strlen(path));//定位所要删除的文件
