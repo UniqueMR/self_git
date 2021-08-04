@@ -35,12 +35,12 @@
 ### zlib压缩算法
 * 利用zlib进行压缩操作的流程
 1. 创建z_stream对象stream和SHA_CTX对象c
-```c
+```cpp
 z_stream stream; 
 SHA_CTX c;
 ```
 2. 对stream对象进行初始化操作
-```c
+```cpp
 	memset(&stream, 0, sizeof(stream));
 	deflateInit(&stream, Z_BEST_COMPRESSION);
 	size = deflateBound(&stream, len);
@@ -49,7 +49,7 @@ SHA_CTX c;
 ```
 
 3. 进行压缩操作
-```c
+```cpp
 	stream.next_in = buf;//buf为sha1值
 	stream.avail_in = len;
 	stream.next_out = compressed;
@@ -80,7 +80,7 @@ int SHA1_Update(SHA_CTX *c, const void *data, unsigned long len): SHA1_Update() 
 int SHA1_Final(unsigned char *md, SHA_CTX *c)
 
 ### struct stat结构体：保存文件状态信息的结构体
-```c
+```cpp
 struct stat 
 { 
    dev_t     st_dev;     /* 文件所在设备的标识  */ 
@@ -102,7 +102,7 @@ struct stat
 ### z_stream结构体：
 * 属于zlib库
 * 结构体定义
-```c
+```cpp
 typedef struct z_stream_s {
    Bytef   *next_in;//流的输入
    uInt    avail_in;//当avail_in下降到0时，更新avail_in和next_in 
