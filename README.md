@@ -1,8 +1,14 @@
 self_git
+
+
 * 项目环境说明：
+
+
 该工程运行于Linux环境，也可运行于windows下的linux子系统WSL，在Linux命令行输入指令可实现相应功能
 
 * 命令行使用说明：
+
+
 ./git --init: 初始化git仓库，创建git的工作目录
 
 ./git --add <filename>: 添加文件或目录到暂存区
