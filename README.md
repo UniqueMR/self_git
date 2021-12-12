@@ -1,4 +1,25 @@
 self_git
+* 项目环境说明：
+该工程运行于Linux环境，也可运行于windows下的linux子系统WSL，在Linux命令行输入指令可实现相应功能
+
+* 命令行使用说明：
+./git --init: 初始化git仓库，创建git的工作目录
+
+./git --add <filename>: 添加文件或目录到暂存区
+
+./git  --rm <filename>: 将特定文件从暂存区中删除
+
+./git  --status <filename>: 查看特定文件是否已加入暂存区
+
+./git --cat-file <sha1>: 查看objects文件内容
+
+./git --diff: 查看工作区和暂存区中的文件差异
+
+./git --commit <parent sha1> < changelog: 将本地变更提交到版本库中
+
+./git --read-tree <sha1>: 读取并解析指定sha1值的tree对象，输出变更文件的信息 
+
+* 开发日志：
 7月23日：
 1. 环境配置：安装linux发行版、git和gcc
 2. 源码研究：拷贝git源码（0.99）,编译并运行
