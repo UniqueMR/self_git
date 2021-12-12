@@ -20,6 +20,7 @@ self_git
 ./git --read-tree <sha1>: 读取并解析指定sha1值的tree对象，输出变更文件的信息 
 
 * 开发日志：
+  
 7月23日：
 1. 环境配置：安装linux发行版、git和gcc
 2. 源码研究：拷贝git源码（0.99）,编译并运行
